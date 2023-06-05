@@ -5,36 +5,53 @@ export const ImageInput = () => {
     const [img, setImg] = useState();
     const [convertedImg, setConvertedImg] = useState();
 
-    const handleSubmit = async (event) => {
+    const onChangeImg = async (event) => {
 
         event.preventDefault();
-        const img_blob = new Blob(img, {type: "image/jpeg"});
-        console.log(img_blob);
-        await fetch("/api/convert/jpeg", {
+        console.log(event.target.files[0]);
+        const fileReader = new FileReader();
+        let arrayBuffer = undefined;
+        fileReader.readAsArrayBuffer(event.target.files[0]);
+        fileReader.onload = async () => {
+            arrayBuffer = fileReader.result;
+        }
+
+        const img_blob = new Blob([arrayBuffer], { type: "image/jpeg" });
+        setImg(img_blob);
+    }
+
+    const handleSubmit = async (event) => {
+        let formData = new FormData();
+        formData.append("image", img, "image.jpg");
+
+        event.preventDefault();
+        await fetch(`/api/convert/jpeg`, {
             method: 'POST',
             headers: {
                 "Content-Type": 'application/octet-stream',
             },
-            body: img_blob
-
+            body: formData
         })
-        .then(res => {
+        .then(async res => {
             console.log(res);
             if(res.status === 200) {
-                const img_mono = res.blob();
+                const img_mono = await res.blob();
 
-                setConvertedImg(img_mono);
+                setConvertedImg(URL.createObjectURL(img_mono));
                 return <img src={convertedImg}></img>;
             }
             else {
                 return <p>なんか失敗</p>;
             }
         })
+        .catch(err => {
+            console.error(err);
+        });
     }
     return(
         <div>
             <form onSubmit={handleSubmit}>
-                <input type="file" name="image" accept="image/jpeg, image/png" onChange={(event) => {event.preventDefault(); setImg(event.target.files);}}></input>
+                <input type="file" name="image" accept="image/jpeg, image/png" onChange={(event) => onChangeImg(event)}></input>
                 <input type="submit"></input>
             </form>
         </div>
