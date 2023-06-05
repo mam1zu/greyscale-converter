@@ -21,8 +21,6 @@ export const ImageInput = () => {
     }
 
     const handleSubmit = async (event) => {
-        let formData = new FormData();
-        formData.append("image", img, "image.jpg");
 
         event.preventDefault();
         await fetch(`/api/convert/jpeg`, {
@@ -30,7 +28,7 @@ export const ImageInput = () => {
             headers: {
                 "Content-Type": 'application/octet-stream',
             },
-            body: formData
+            body: img
         })
         .then(async res => {
             console.log(res);
