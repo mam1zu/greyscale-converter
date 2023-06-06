@@ -5,48 +5,60 @@ export const ImageInput = () => {
     const [img, setImg] = useState();
     const [convertedImg, setConvertedImg] = useState();
 
-    const onChangeImg = async (event) => {
+    const convertedImgElm = () => {
+        if(convertedImg !== undefined)
+            return <img src={convertedImg}/>;
+        else
+            return <></>;
+    }
 
+    const onChangeImg = async (event) => {
+        //TODO: inputで指定された画像ファイルをarrayBufferとして保存
         event.preventDefault();
-        console.log(event.target.files[0]);
         const fileReader = new FileReader();
-        let arrayBuffer = undefined;
-        await fileReader.readAsArrayBuffer(event.target.files[0]);
+        //let arrayBuffer = undefined;
+        let texted_img = undefined;
+        console.log(event.target.files[0]);
+        await fileReader.readAsText(event.target.files[0]);
         fileReader.onload = async () => {
-            arrayBuffer = fileReader.result;
+            //arrayBuffer = fileReader.result;
+            texted_img = fileReader.result;
+            setImg(texted_img);
+            console.log(typeof texted_img);
         }
-        setImg(arrayBuffer);
-        console.log(arrayBuffer);
+        console.log(event.target.files[0].type);
+        console.log();
+        /*
+        const img_blob = await new Blob([arrayBuffer], { "type": "image/jpeg"});
+        setImg(img_blob); 
+        */
     }
 
     const handleSubmit = async (event) => {
-
+        //TODO: state imgをbackendにPOST, resのarrayBufferを受け取りconcertedImgに入れる
         event.preventDefault();
-        let formData = new FormData();
-        await formData.append("image", img);
-        await formData.append("hello", "hello");
-        console.log(formData.get("image"));
-        console.log(img);
-        console.log(formData.get("hello"));
-        await fetch(`/api/convert/jpeg`, {
+        const body_json = {
+            "image": img
+        };
+
+        await fetch('/api/convert/jpeg', {
             method: 'POST',
             headers: {
-                "Content-Type": 'application/octet-stream',
+                "Content-Type": 'application/json',
             },
-            body: formData
+            body: JSON.stringify(body_json)
         })
         .then(async res => {
             if(res.status === 200) {
-                const img_mono = await res.blob();
-
-                setConvertedImg(URL.createObjectURL(img_mono));
-                return <img src={convertedImg}></img>;
+                const img_mono_buffer = await res.arrayBuffer();
+                setConvertedImg(URL.createObjectURL(img_mono_buffer));
             }
             else {
-                return <p>なんか失敗</p>;
+                console.log("received except HTTP status code 200");;
+                console.error(res);
             }
         })
-        .catch(err => {
+        .catch((err) => {
             console.error(err);
         });
     }
@@ -56,6 +68,7 @@ export const ImageInput = () => {
                 <input type="file" name="image" accept="image/jpeg, image/png" onChange={(event) => onChangeImg(event)}></input>
                 <input type="submit"></input>
             </form>
+            {convertedImgElm()}
         </div>
     );
 }
