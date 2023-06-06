@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Buffer } from 'buffer';
 
 export const ImageInput = () => {
 
@@ -14,27 +15,34 @@ export const ImageInput = () => {
 
     const onChangeImg = async (event) => {
         //TODO: inputで指定された画像ファイルをarrayBufferとして保存
+
         event.preventDefault();
-        const fileReader = new FileReader();
-        //let arrayBuffer = undefined;
-        let texted_img = undefined;
-        console.log(event.target.files[0]);
-        await fileReader.readAsText(event.target.files[0]);
-        fileReader.onload = async () => {
-            //arrayBuffer = fileReader.result;
-            texted_img = fileReader.result;
-            setImg(texted_img);
-            console.log(typeof texted_img);
+        if(event.target.files[0] === undefined) {
+            return;
         }
-        console.log(event.target.files[0].type);
-        console.log();
-        /*
-        const img_blob = await new Blob([arrayBuffer], { "type": "image/jpeg"});
-        setImg(img_blob); 
-        */
+        const fileReader = new FileReader();
+        await fileReader.readAsDataURL(event.target.files[0]);
+        fileReader.onloadend = async () => {
+            const unprocessed_img_base64 = fileReader.result;
+            let processed_img_base64 = "";
+
+            //最初についている data:*/*;base64, を削除する ","を検知してslice
+            for (let i = 0; i < unprocessed_img_base64.length; i++) {
+                if(',' == unprocessed_img_base64[i]) {
+                    processed_img_base64 = unprocessed_img_base64.slice(i+1, unprocessed_img_base64.length);
+                    break;
+                }
+            }
+
+            setImg(processed_img_base64);
+            console.log(processed_img_base64);
+        }
+
+
     }
 
     const handleSubmit = async (event) => {
+        
         //TODO: state imgをbackendにPOST, resのarrayBufferを受け取りconcertedImgに入れる
         event.preventDefault();
         const body_json = {
@@ -50,8 +58,12 @@ export const ImageInput = () => {
         })
         .then(async res => {
             if(res.status === 200) {
-                const img_mono_buffer = await res.arrayBuffer();
-                setConvertedImg(URL.createObjectURL(img_mono_buffer));
+                let monoimage;
+                await res.json().then(json => {
+                    monoimage = Buffer.from(json.monoimage, 'base64');
+                });
+                const blob = new Blob([monoimage], { "type": "image/jpeg"});
+                setConvertedImg(URL.createObjectURL(blob));
             }
             else {
                 console.log("received except HTTP status code 200");;

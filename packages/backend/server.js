@@ -2,13 +2,10 @@ const express = require('express');
 const app = express();
 const sharp = require('sharp');
 const fs = require('fs');
-const { time } = require('console');
 const path = require('path');
-const formData = require('express-form-data');
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true}));
-app.use(formData.parse());
+app.use(express.json({limit: '3mb'}));
+app.use(express.urlencoded({ limit: '3mb', extended: true}));
 
 app.get('/', (req, res) => {
     res.status(200).send("API SERVER");
@@ -17,12 +14,31 @@ app.get('/', (req, res) => {
 app.post('/api/convert/jpeg', (req, res) => {
 
     try {
-        console.log(req.body);
-        console.log(req.headers);
-        res.status(422).end();
+        const timeNow = new Date().getTime();
+        const fpath = path.join(__dirname, "temp", timeNow+".jpeg");
+        if(req.body.image !== undefined) {
+            const buf = Buffer.from(req.body.image, 'base64');
+            fs.writeFileSync(fpath, buf, (err) => {
+                if(err) {
+                    throw err;
+                }
+                else {
+                    console.log("A file has been created");
+                }
+            });
+
+            //TODO: 得られたファイルに対して画像処理を行いbase64に変換した後送信
+            const res_json = {
+                "monoimage": req.body.image
+            }
+            res.status(200).json(res_json);
+        } else {
+            console.log("req.body.img is empty");
+            res.status(400).send('req.body.img is empty');
+        }
     } catch (err) {
         console.error(err);
-        res.status(422).send("Invalid parameters");
+        res.status(500).send("Internal Server Error");
     }
 });
 
