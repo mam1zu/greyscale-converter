@@ -11,27 +11,31 @@ export const ImageInput = () => {
         console.log(event.target.files[0]);
         const fileReader = new FileReader();
         let arrayBuffer = undefined;
-        fileReader.readAsArrayBuffer(event.target.files[0]);
+        await fileReader.readAsArrayBuffer(event.target.files[0]);
         fileReader.onload = async () => {
             arrayBuffer = fileReader.result;
         }
-
-        const img_blob = new Blob([arrayBuffer], { type: "image/jpeg" });
-        setImg(img_blob);
+        setImg(arrayBuffer);
+        console.log(arrayBuffer);
     }
 
     const handleSubmit = async (event) => {
 
         event.preventDefault();
+        let formData = new FormData();
+        await formData.append("image", img);
+        await formData.append("hello", "hello");
+        console.log(formData.get("image"));
+        console.log(img);
+        console.log(formData.get("hello"));
         await fetch(`/api/convert/jpeg`, {
             method: 'POST',
             headers: {
                 "Content-Type": 'application/octet-stream',
             },
-            body: img
+            body: formData
         })
         .then(async res => {
-            console.log(res);
             if(res.status === 200) {
                 const img_mono = await res.blob();
 

@@ -18,7 +18,9 @@ app.post('/api/convert/jpeg', (req, res) => {
 
     try {
         console.log(req.body);
+        let img_blob = 
         console.log(req.headers);
+        res.status(422).end();
     } catch (err) {
         console.error(err);
         res.status(422).send("Invalid parameters");
