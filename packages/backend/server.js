@@ -3,6 +3,7 @@ const app = express();
 const sharp = require('sharp');
 const fs = require('fs');
 const path = require('path');
+const convert = require('./functions/convert');
 
 app.use(express.json({limit: '3mb'}));
 app.use(express.urlencoded({ limit: '3mb', extended: true}));
@@ -16,6 +17,7 @@ app.post('/api/convert/jpeg', (req, res) => {
     try {
         const timeNow = new Date().getTime();
         const fpath = path.join(__dirname, "temp", timeNow+".jpeg");
+        
         if(req.body.image !== undefined) {
             const buf = Buffer.from(req.body.image, 'base64');
             fs.writeFileSync(fpath, buf, (err) => {
@@ -28,6 +30,9 @@ app.post('/api/convert/jpeg', (req, res) => {
             });
 
             //TODO: 得られたファイルに対して画像処理を行いbase64に変換した後送信
+
+            const monoimage = convert("image/jpeg", buf);
+
             const res_json = {
                 "monoimage": req.body.image
             }
