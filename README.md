@@ -1,4 +1,4 @@
-# greyscale-transformとは
+# greyscale-transform
 png画像とかjpeg画像をグレースケール化(モノクロ化, 白黒化)してクライアントに返すアプリです。
 
 # 使用した言語
