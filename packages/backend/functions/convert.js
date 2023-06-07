@@ -1,12 +1,14 @@
 const sharp = require('sharp');
 
+//画像 bufを受け取って 白黒化した画像bufを返す
+//TODO: 例外処理を実装する
 const convert = (type, buf) => {
     const monoimage = sharp(buf);
     if(type == "image/jpeg") {
-        return monoimage.greyscale().jpeg();
+        return monoimage.greyscale().jpeg().toBuffer();
     }
     if(type == "image/png") {
-        return monoimage.greyscale().png();
+        return monoimage.greyscale().png().toBuffer();
     }
 }
 

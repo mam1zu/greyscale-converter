@@ -12,29 +12,19 @@ app.get('/', (req, res) => {
     res.status(200).send("API SERVER");
 });
 
-app.post('/api/convert/jpeg', (req, res) => {
+app.post('/api/convert/jpeg', async (req, res) => {
 
     try {
-        const timeNow = new Date().getTime();
-        const fpath = path.join(__dirname, "temp", timeNow+".jpeg");
         
         if(req.body.image !== undefined) {
             const buf = Buffer.from(req.body.image, 'base64');
-            fs.writeFileSync(fpath, buf, (err) => {
-                if(err) {
-                    throw err;
-                }
-                else {
-                    console.log("A file has been created");
-                }
-            });
 
             //TODO: 得られたファイルに対して画像処理を行いbase64に変換した後送信
 
-            const monoimage = convert("image/jpeg", buf);
+            const monoimage = await convert("image/jpeg", buf);
 
             const res_json = {
-                "monoimage": req.body.image
+                "monoimage": monoimage.toString('base64')
             }
             res.status(200).json(res_json);
         } else {

@@ -1,10 +1,31 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Buffer } from 'buffer';
 
 export const ImageInput = () => {
 
     const [img, setImg] = useState();
     const [convertedImg, setConvertedImg] = useState();
+    const [downloadCounter, setDownloadCounter] = useState(0);
+
+    useEffect(() => {
+        if(convertedImg === undefined) return;
+        let link = document.createElement('a');
+        link.href = convertedImg;
+        link.setAttribute('download', new Date().getTime()+".jpeg");
+        link.click();
+    }, [downloadCounter]);
+
+    const downloadImageButton = () => {
+        if(convertedImg !== undefined)
+        return (
+            <div>
+                <span>完成!!!</span>
+                <button onClick={() => {setDownloadCounter(downloadCounter+1)}}>ダウンロード</button>
+            </div>
+        );
+        else
+            return <></>;
+    }
 
     const convertedImgElm = () => {
         if(convertedImg !== undefined)
@@ -49,7 +70,7 @@ export const ImageInput = () => {
             "image": img
         };
 
-        await fetch('/api/convert/jpeg', {
+        fetch('/api/convert/jpeg', {
             method: 'POST',
             headers: {
                 "Content-Type": 'application/json',
@@ -81,6 +102,7 @@ export const ImageInput = () => {
                 <input type="submit"></input>
             </form>
             {convertedImgElm()}
+            {downloadImageButton()}
         </div>
     );
 }
