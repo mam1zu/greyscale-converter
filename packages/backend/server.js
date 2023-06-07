@@ -12,45 +12,59 @@ app.get('/', (req, res) => {
     res.status(200).send("API SERVER");
 });
 
-app.post('/api/convert/jpeg', async (req, res) => {
+app.post('/api/convert/jpeg', (req, res) => {
 
-    try {
-        
-        if(req.body.image !== undefined) {
-            const buf = Buffer.from(req.body.image, 'base64');
+    if(req.body.image === undefined) {
+        res.status(400).send("Bad Request");
+    }
 
-            //TODO: 得られたファイルに対して画像処理を行いbase64に変換した後送信
+    const buf = Buffer.from(req.body.image, 'base64');
 
-            const monoimage = await convert("image/jpeg", buf);
-
-            const res_json = {
-                "monoimage": monoimage.toString('base64')
-            }
-            res.status(200).json(res_json);
-        } else {
-            console.log("req.body.img is empty");
-            res.status(400).send('req.body.img is empty');
-        }
-    } catch (err) {
+    convert("image/jpeg", buf)
+    .then((buf) => {
+        const res_json = { "monoimage": buf.toString('base64')};
+        res.status(200).json(res_json);
+        accessLog(req.ip, req.url);
+    })
+    .catch((err) => {
         console.error(err);
         res.status(500).send("Internal Server Error");
-    }
+    });
+
 });
 
-app.get('/api/convert/png', (req, res) => {
+app.post('/api/convert/png', (req, res) => {
     //pngファイルを白黒化してpngファイルとして返す
+
+    if(req.body.image === undefined) {
+        res.status(400).send("Bad Request");
+    }
+
+    const buf = Buffer.from(req.body.image, 'base64');
+
+    convert("image/png", buf)
+    .then((buf) => {
+        const res_json = { "monoimage": buf.toString('base64')};
+        res.status(200).json(res_json);
+        accessLog(req.ip, req.url);
+    })
+    .catch((err) => {
+        console.error(err);
+        res.status(500).send("Internal Server Error");
+    });
 });
 
 app.use((err, req, res, next) => {
+    console.error(err);
     res.status(500).send('Internal Server Error');
-    console.log("500 Internal Server Error");
-    console.log(err);
 })
 
 app.listen(8000, () => {
-    console.log("Login API Server Start \n Listening on port: 8000");
+    console.log("Hairo Backend API Server Start \nListening on port: 8000");
 });
 
-function getTimeNow() {
-    return new Date().getTime();
+const accessLog = (ip, url) => {
+    const now = new Date();
+    const time = `${now.getFullYear()}/${now.getMonth()}/${now.getDay()} ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
+    console.log(`[${time}]Request to: ${url} from ${ip}`);
 }
