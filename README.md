@@ -7,6 +7,6 @@ HTML/CSS, Javascript
 
 # 使用したライブラリ
   ### フロントエンド
-    React
+  React
   ### バックエンド
-    Express, Sharp
+  Express, Sharp
