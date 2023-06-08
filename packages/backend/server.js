@@ -14,6 +14,8 @@ app.get('/', (req, res) => {
 
 app.post('/api/convert/jpeg', (req, res) => {
 
+    res.setHeader("Access-Control-Allow-Origin", '*');
+
     if(req.body.image === undefined) {
         res.status(400).send("Bad Request");
     }
