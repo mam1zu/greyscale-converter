@@ -47,7 +47,7 @@ export const ImageInput = () => {
 
     const failedFetchElm = () => {
         if(!fetchStatus)
-            return <span color='red'>Internal Server Error</span>;
+            return <span color='red'></span>;
         else
             return;
     }
@@ -119,7 +119,14 @@ export const ImageInput = () => {
                     });
                 }
                 else {
-                    window.alert("画像処理に失敗しました。");
+                    switch(res.status) {
+                        case 413:
+                            window.alert("画像が大き過ぎます。3MB以下にしてください");
+                            break;
+                        case 500:
+                            window.alert("内部サーバーエラーです。");
+                            break;
+                    }
                     return;
                 }
             })
@@ -151,7 +158,14 @@ export const ImageInput = () => {
                     });
                 }
                 else {
-                    window.alert("画像処理に失敗しました。");
+                    switch(res.status) {
+                        case 413:
+                            window.alert("画像が大き過ぎます。3MB以下にしてください");
+                            break;
+                        case 500:
+                            window.alert("内部サーバーエラーです。");
+                            break;
+                    }
                     return;
                 }
             })
